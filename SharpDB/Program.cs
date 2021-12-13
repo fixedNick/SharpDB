@@ -27,8 +27,8 @@ namespace SharpDB
         // ananas' LIMIT 1 -- '
         // 2. Чтобы удалить таблицу:
         // '; DROP TABLE test; -- '
-        // 3. Чтобы очистить таблицу:
-        // '; TRUNCATE TABLE test; -- '
+        // 3. Чтобы добавить в таблицу новую строчку:
+        // ananas'; INSERT INTO test values (NULL, 'zaraza', 'admin'); -- '
 
         static void CreateAndOpenConnection(ref SqliteConnection db)
         {
