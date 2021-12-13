@@ -6,7 +6,6 @@ namespace SharpDB
 {
     class Program
     {
-
         private static void ShowDatabaseAllRows(SqliteCommand dbc)
         {
             dbc.CommandText = "SELECT * FROM test";
@@ -24,20 +23,31 @@ namespace SharpDB
         }
 
         // Что вводить в логин:
-        // 1. Чтобы пройти авторизацию как любой пользователь, к примеру kos
-        // kos' LIMIT 1 -- '
+        // 1. Чтобы пройти авторизацию как любой пользователь, к примеру ananas
+        // ananas' LIMIT 1 -- '
         // 2. Чтобы удалить таблицу:
-        // '; DROP TABLE test
+        // '; DROP TABLE test; -- '
         // 3. Чтобы очистить таблицу:
-        // '; TRUNCATE TABLE test
+        // '; TRUNCATE TABLE test; -- '
 
         static void CreateAndOpenConnection(ref SqliteConnection db)
         {
-            if (db.State != System.Data.ConnectionState.Closed)
-                return;
+            var dbc = db.CreateCommand();
 
-            db = new SqliteConnection("Data Source=db.sqlite");
-            db.Open();
+            dbc.CommandText = @"create table if not exists test(
+                    id integer primary key autoincrement,
+                    login text,
+                    password text)";
+            dbc.ExecuteNonQuery();
+
+            dbc.CommandText = "insert into test values (NULL, 'ananas', '12345')";
+            dbc.ExecuteNonQuery();
+
+            dbc.CommandText = "insert into test values (NULL, 'kokos', '77777')";
+            dbc.ExecuteNonQuery();
+
+            dbc.CommandText = "insert into test values (NULL, 'parnas', '99999')";
+            dbc.ExecuteNonQuery();
         }
 
         static void Main(string[] args)
@@ -72,13 +82,12 @@ namespace SharpDB
             dbc.ExecuteNonQuery();
 
             Console.Write("Enter ur login: ");
-            var login = Console.ReadLine();
+            string login = Console.ReadLine();
             Console.Write("Enter ur password: ");
-            var password = Console.ReadLine();
-            // select user
+            string password = Console.ReadLine();
             while (true)
             {
-                Console.WriteLine("1. Use method without defense to sql injection");
+                Console.WriteLine("1. Use method without defense from sql injection");
                 Console.WriteLine("2. Use method with defense via Parameters.AddWithValue");
                 Console.WriteLine("3. Use method with defense via RegEx");
                 Console.WriteLine("4. Show database rows");
@@ -130,10 +139,11 @@ namespace SharpDB
         static void SQLQueryDefendedWithParameters(SqliteCommand dbc, string login, string password)
         {
             Console.WriteLine("...[Начинает работу защищенный метод SQLQueryDefendedWithParameters]...");
-            var query = "SELECT * FROM test WHERE `login` = $login AND `password` = $pass";
+            var query = "SELECT * FROM test WHERE login = $log AND password = $pass";
             dbc.CommandText = query;
-            dbc.Parameters.AddWithValue("$login", login);
-            dbc.Parameters.AddWithValue("$pass", password);
+            dbc.Parameters.Clear();
+            dbc.Parameters.AddWithValue("$log", login).SqliteType = SqliteType.Text;
+            dbc.Parameters.AddWithValue("$pass", password).SqliteType = SqliteType.Text;
 
             using (var reader = dbc.ExecuteReader())
             {
@@ -145,7 +155,6 @@ namespace SharpDB
                 }
             }
         }
-
         // RegEx: https://docs.microsoft.com/ru-ru/dotnet/standard/base-types/regular-expressions
         static void SQLQueryDefendedWithRegEx(SqliteCommand dbc, string login, string password)
         {
