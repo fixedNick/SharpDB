@@ -30,7 +30,7 @@ namespace SharpDB
         // 3. Чтобы добавить в таблицу новую строчку:
         // ananas'; INSERT INTO test values (NULL, 'zaraza', 'admin'); -- '
 
-        static void CreateAndOpenConnection(ref SqliteConnection db)
+        static void CreateDb(ref SqliteConnection db)
         {
             var dbc = db.CreateCommand();
 
@@ -97,16 +97,16 @@ namespace SharpDB
                 switch (answer)
                 {
                     case "1":
-                        try { SQLQueryToInject(dbc, ref login, ref password); } catch { CreateAndOpenConnection(ref db); }
+                        try { SQLQueryToInject(dbc, ref login, ref password); } catch { CreateDb(ref db); }
                         break;
                     case "2":
-                        try { SQLQueryDefendedWithParameters(dbc, ref login, ref password); } catch { CreateAndOpenConnection(ref db); }
+                        try { SQLQueryDefendedWithParameters(dbc, ref login, ref password); } catch { CreateDb(ref db); }
                         break;
                     case "3":
-                        try { SQLQueryDefendedWithRegEx(dbc, ref login, ref password); } catch { CreateAndOpenConnection(ref db); }
+                        try { SQLQueryDefendedWithRegEx(dbc, ref login, ref password); } catch { CreateDb(ref db); }
                         break;
                     case "4":
-                        try { ShowDatabaseAllRows(dbc); } catch { CreateAndOpenConnection(ref db); }
+                        try { ShowDatabaseAllRows(dbc); } catch { CreateDb(ref db); }
                         break;
                     case "5":
                         FillLoginAndPass(ref login, ref password);
