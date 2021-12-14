@@ -81,10 +81,9 @@ namespace SharpDB
             dbc.CommandText = "insert into test values (NULL, 'parnas', '99999')";
             dbc.ExecuteNonQuery();
 
-            Console.Write("Enter ur login: ");
-            string login = Console.ReadLine();
-            Console.Write("Enter ur password: ");
-            string password = Console.ReadLine();
+            string login = string.Empty,
+                password = string.Empty;
+
             while (true)
             {
                 Console.WriteLine("1. Use method without defense from sql injection");
@@ -98,30 +97,29 @@ namespace SharpDB
                 switch (answer)
                 {
                     case "1":
-                        try { SQLQueryToInject(dbc, login, password); } catch { CreateAndOpenConnection(ref db); }
+                        try { SQLQueryToInject(dbc, ref login, ref password); } catch { CreateAndOpenConnection(ref db); }
                         break;
                     case "2":
-                        try { SQLQueryDefendedWithParameters(dbc, login, password); } catch { CreateAndOpenConnection(ref db); }
+                        try { SQLQueryDefendedWithParameters(dbc, ref login, ref password); } catch { CreateAndOpenConnection(ref db); }
                         break;
                     case "3":
-                        try { SQLQueryDefendedWithRegEx(dbc, login, password); } catch { CreateAndOpenConnection(ref db); }
+                        try { SQLQueryDefendedWithRegEx(dbc, ref login, ref password); } catch { CreateAndOpenConnection(ref db); }
                         break;
                     case "4":
                         try { ShowDatabaseAllRows(dbc); } catch { CreateAndOpenConnection(ref db); }
                         break;
                     case "5":
-                        Console.Write("Enter ur login: ");
-                        login = Console.ReadLine();
-                        Console.Write("Enter ur password: ");
-                        password = Console.ReadLine();
+                        FillLoginAndPass(ref login, ref password);
                         break;
                     case "6":
                         return;
                 }
             }
         }
-        static void SQLQueryToInject(SqliteCommand dbc, string login, string password)
+        static void SQLQueryToInject(SqliteCommand dbc, ref string login, ref string password)
         {
+            if (login.Length == 0 || password.Length == 0)
+                FillLoginAndPass(ref login, ref password);
             Console.WriteLine("...[Начинает работу уязвимый метод SQLQueryToInject]...");
 
             var query = $"SELECT * FROM test WHERE `login` = '{login}' AND `password` = '{password}'";
@@ -136,8 +134,10 @@ namespace SharpDB
                 }
             }
         }
-        static void SQLQueryDefendedWithParameters(SqliteCommand dbc, string login, string password)
+        static void SQLQueryDefendedWithParameters(SqliteCommand dbc, ref string login,ref string password)
         {
+            if (login.Length == 0 || password.Length == 0)
+                FillLoginAndPass(ref login, ref password);
             Console.WriteLine("...[Начинает работу защищенный метод SQLQueryDefendedWithParameters]...");
             var query = "SELECT * FROM test WHERE login = $log AND password = $pass";
             dbc.CommandText = query;
@@ -156,8 +156,10 @@ namespace SharpDB
             }
         }
         // RegEx: https://docs.microsoft.com/ru-ru/dotnet/standard/base-types/regular-expressions
-        static void SQLQueryDefendedWithRegEx(SqliteCommand dbc, string login, string password)
+        static void SQLQueryDefendedWithRegEx(SqliteCommand dbc, ref string login, ref string password)
         {
+            if (login.Length == 0 || password.Length == 0)
+                FillLoginAndPass(ref login, ref password);
             Console.WriteLine("...[Начинает работу защищенный метод SQLQueryDefendedWithRegEx]...");
             var pattern = "[A-Z|a-z|0-9|\\s]*"; // Любое количество символов любого регистра, любых цифр и пробелов
 
@@ -201,6 +203,14 @@ namespace SharpDB
                     Console.WriteLine($"Entered data [login: {login}| pass: {password}] Access granted to: [login: {reader.GetString(1)}| pass: {reader.GetString(2)}]");
                 }
             }
+
+        }
+        static void FillLoginAndPass(ref string login, ref string password)
+        {
+            Console.Write("Enter account login: ");
+            login = Console.ReadLine();
+            Console.Write("Enter account password: ");
+            password= Console.ReadLine();
 
         }
     }
